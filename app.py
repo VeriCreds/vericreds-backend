@@ -39,7 +39,7 @@ def reqChallenge():
     not_before_time_str = not_before_time.isoformat().replace("+00:00", "Z")
 
     body = {
-        "domain": "localhost:3000",
+        "domain": "127.0.0.1:5000",
         "chainId": args.get("chainId"),
         "address": args.get("address"),
         "statement": "Please confirm login",
