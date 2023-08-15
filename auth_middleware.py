@@ -5,6 +5,7 @@ from flask import current_app
 import models
 
 
+# A decorator for requiring token authentication
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -18,11 +19,11 @@ def token_required(f):
                 "error": "Unauthorized"
             }, 401
         try:
-            data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
-            current_user = models.User().get_by_id(data["user_id"])
+            data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS512"])
+            current_user = models.User().get_by_id(data["id"])
             if current_user is None:
                 return {
-                    "message": "Invalid Authentication token!",
+                    "message": "Invalid authentication token!",
                     "data": None,
                     "error": "Unauthorized"
                 }, 401
