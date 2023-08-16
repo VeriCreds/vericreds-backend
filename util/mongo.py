@@ -19,7 +19,7 @@ def get_database():
     return client["vericreds-db"]
 
 
-# This is added so that many files can reuse the function get_database()
+# # This is added so that many files can reuse the function get_database()
 if __name__ == "__main__":
-    # Get the database
+#     # Get the database
     db = get_database()
