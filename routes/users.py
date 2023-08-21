@@ -1,9 +1,8 @@
 import jwt
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from cerberus import Validator
 from models import User
 from auth_middleware import token_required
-import app
 
 
 users = Blueprint('users', __name__, template_folder='routes')
@@ -12,33 +11,39 @@ users = Blueprint('users', __name__, template_folder='routes')
 @users.route('/', methods=['POST'])
 def add_user():
     try:
-        user = request.json
+        user = request.get_json()
         if not user:
-            return {
+            return jsonify({
                 "message": "Please provide user details",
                 "data": None,
                 "error": "Bad request"
-            }, 400
-        is_validated = Validator(**user)
-        if is_validated is not True:
-            return dict(message='Invalid data', data=None, error=is_validated), 400
+            }), 400
+
+        # Assuming Validator is a class that raises an exception if validation fails
+        try:
+            is_validated = Validator(**user)
+        except Exception as validation_error:
+            return jsonify(dict(message='Invalid data', data=None, error=str(validation_error))), 400
+
         user = User().register_user(**user)
         if not user:
-            return {
+            return jsonify({
                 "message": "User already exists",
                 "error": "Conflict",
                 "data": None
-            }, 409
-        return {
+            }), 409
+
+        return jsonify({
             "message": "Successfully created new user",
             "data": user
-        }, 201
+        }), 201
+
     except Exception as e:
-        return {
+        return jsonify({
             "message": "Something went wrong",
             "error": str(e),
             "data": None
-        }, 500
+        }), 500
 
 
 @users.route("/login", methods=["POST"])
@@ -74,7 +79,7 @@ def login():
                 # The token will expire after 24 hrs
                 user["token"] = jwt.encode(
                     {"user_id": user["_id"]},
-                    app.config["SECRET_KEY"],
+                    current_app.config["SECRET_KEY"],
                     algorithm="HS512"
                 )
                 return {
@@ -108,7 +113,7 @@ def get_all_users():
     })
 
 
-@users.route("/user_id", methods=["GET"])
+@users.route("/<user_id>", methods=["GET"])
 # @token_required
 def get_single_user(user_id):
     user = User.get_user_by_id(user_id)
@@ -150,11 +155,11 @@ def update_user(current_user):
         }), 400
 
 
-@users.route("/", methods=["DELETE"])
+@users.route("/{user_id}", methods=["DELETE"])
 # @token_required
-def disable_user_account(current_user):
+def disable_user_account(user_id):
     try:
-        User().disable_user_account(current_user["_id"])
+        User().disable_user_account(user_id)
         return jsonify({
             "message": "Successfully disabled account",
             "data": None
