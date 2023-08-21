@@ -155,11 +155,11 @@ def update_user(current_user):
         }), 400
 
 
-@users.route("/{user_id}", methods=["DELETE"])
+@users.route("/<user_id>", methods=["DELETE"])
 # @token_required
-def disable_user_account(user_id):
+def delete_user_account(user_id):
     try:
-        User().disable_user_account(user_id)
+        User().delete_user(user_id)
         return jsonify({
             "message": "Successfully disabled account",
             "data": None
