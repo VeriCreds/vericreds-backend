@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 
-
 load_dotenv()
 
 
@@ -10,10 +9,19 @@ def create_app():
     app = Flask(__name__, template_folder='routes')
 
     from mongo import MongoConnection
-    mongo = MongoConnection.connect_to_db()
+    mongo = MongoConnection.get_instance()
 
     from routes.users import users
     app.register_blueprint(users, url_prefix="/users/")
+
+    from routes.transactions import transactions
+    app.register_blueprint(transactions, url_prefix="/transactions/")
+
+    from routes.smart_contracts import smart_contracts
+    app.register_blueprint(smart_contracts, url_prefix="/smart_contracts/")
+
+    from routes.nfts import nfts
+    app.register_blueprint(nfts, url_prefix="/nfts/")
 
     return app
 

@@ -10,11 +10,11 @@ class MongoConnection:
     @staticmethod
     def get_instance():
         if MongoConnection._instance is None:
-            MongoConnection._instance = MongoConnection.connect_to_db()
+            MongoConnection._instance = MongoConnection._connect_to_db()
         return MongoConnection._instance
 
     @staticmethod
-    def connect_to_db():
+    def _connect_to_db():
         app = Flask(__name__, template_folder='routes')
 
         username = urllib.parse.quote_plus(os.getenv("MONGO_DB_USERNAME"))

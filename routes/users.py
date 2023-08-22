@@ -2,6 +2,7 @@ import jwt
 from flask import Blueprint, request, jsonify, current_app
 from cerberus import Validator
 from models import User
+from werkzeug.security import generate_password_hash, check_password_hash
 from auth_middleware import token_required
 
 
@@ -125,23 +126,22 @@ def get_single_user(user_id):
 
 @users.route("/", methods=["PUT"])
 # @token_required
-def update_user(current_user):
+def update_user():
     try:
         user = request.json
-        if user.get("first_name"):
-            if user.get("last_name"):
-                if user.get("email_address"):
-                    user = User().update_user(current_user["_id"], user["first_name"], user["last_name"], user["email_address"])
-                    return jsonify({
-                        "message": "Successfully updated user's data",
-                        "data": user
-                    }), 201
-                else:
-                    user = User().update_user(current_user["_id"], user["first_name"], user["last_name"])
-                    return jsonify({
-                        "message": "Successfully updated user's data",
-                        "data": user
-                    }), 201
+        if user:
+            hashed_password = generate_password_hash(user.get("password"))
+            user = User().update_user(
+                user.get("_id"),
+                user.get("first_name"),
+                user.get("last_name"),
+                user.get("email_address"),
+                hashed_password
+            )
+            return jsonify({
+                "message": "Successfully updated user's data",
+                "data": user
+            }), 201
         return {
             "message": "Invalid data, you can only update your account name!",
             "data": None,
