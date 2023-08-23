@@ -14,16 +14,16 @@ def token_required(f):
             token = request.headers["Authorization"].split(" ")[1]
         if not token:
             return {
-                "message": "Authentication Token is missing!",
+                "message": "Authentication Token is missing",
                 "data": None,
                 "error": "Unauthorized"
             }, 401
         try:
             data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS512"])
-            current_user = models.User().get_by_id(data["id"])
+            current_user = models.User().get_user_by_id(data["_id"])
             if current_user is None:
                 return {
-                    "message": "Invalid authentication token!",
+                    "message": "Invalid authentication token",
                     "data": None,
                     "error": "Unauthorized"
                 }, 401

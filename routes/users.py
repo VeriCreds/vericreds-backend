@@ -1,9 +1,13 @@
-import jwt
+import os, jwt
 from flask import Blueprint, request, jsonify, current_app
 from cerberus import Validator
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from auth_middleware import token_required
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 users = Blueprint('users', __name__, template_folder='routes')
@@ -64,13 +68,13 @@ def login():
                 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
             },
             'password': {
-                'string': {'minlength': 8, 'maxlength': 50}
+                'string': {'minlength': 8, 'maxlength': 999}
             }}
-        v = Validator(schema)
-        credentials = {'email': data.get('email'), 'password': data.get('password')}
-        is_validated = v.validate(credentials)
-        if is_validated is not True:
-            return dict(message='Invalid data', data=None, error=is_validated), 400
+        # v = Validator(schema)
+        # credentials = {'email_address': data.get('email_address'), 'password': data.get('password')}
+        # is_validated = v.validate(credentials)
+        # if is_validated is not True:
+        #     return dict(message='Invalid data', data=None, error=is_validated), 400
         user = User().login(
             data["email_address"],
             data["password"]
@@ -79,8 +83,8 @@ def login():
             try:
                 # The token will expire after 24 hrs
                 user["token"] = jwt.encode(
-                    {"user_id": user["_id"]},
-                    current_app.config["SECRET_KEY"],
+                    {"_id": user["_id"]},
+                    os.getenv('SECRET_KEY'),
                     algorithm="HS512"
                 )
                 return {
@@ -93,19 +97,20 @@ def login():
                     "message": str(e)
                 }, 500
         return {
-            "message": "Error fetching auth token!, invalid email or password",
+            "message": "Error fetching auth token, invalid email or password",
             "data": None,
             "error": "Unauthorized"
         }, 404
     except Exception as e:
         return {
-            "message": "Something went wrong!",
+            "message": "Something went wrong",
             "error": str(e),
             "data": None
         }, 500
 
 
 @users.route("/", methods=["GET"])
+@token_required
 def get_all_users():
     all_users = User.get_all_users()
     return jsonify({
@@ -115,7 +120,7 @@ def get_all_users():
 
 
 @users.route("/<user_id>", methods=["GET"])
-# @token_required
+@token_required
 def get_single_user(user_id):
     user = User.get_user_by_id(user_id)
     return jsonify({
@@ -125,18 +130,18 @@ def get_single_user(user_id):
 
 
 @users.route("/", methods=["PUT"])
-# @token_required
+@token_required
 def update_user():
     try:
         user = request.json
         if user:
-            hashed_password = generate_password_hash(user.get("password"))
+            # hashed_password = generate_password_hash(user.get("password"))
             user = User().update_user(
                 user.get("_id"),
                 user.get("first_name"),
                 user.get("last_name"),
                 user.get("email_address"),
-                hashed_password
+                user.get("password")
             )
             return jsonify({
                 "message": "Successfully updated user's data",
@@ -156,7 +161,7 @@ def update_user():
 
 
 @users.route("/<user_id>", methods=["DELETE"])
-# @token_required
+@token_required
 def delete_user_account(user_id):
     try:
         User().delete_user(user_id)

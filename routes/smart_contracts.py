@@ -1,11 +1,14 @@
 from flask import Blueprint, request, jsonify
 from cerberus import Validator
+
+from auth_middleware import token_required
 from models import SmartContract
 
 smart_contracts = Blueprint('smart_contracts', __name__, template_folder='routes')
 
 
 @smart_contracts.route('/', methods=['POST'])
+@token_required
 def add_smart_contract():
     try:
         contract = request.get_json()
@@ -45,6 +48,7 @@ def add_smart_contract():
 
 
 @smart_contracts.route('/', methods=['GET'])
+@token_required
 def get_all_smart_contracts():
     try:
         all_contracts = SmartContract.get_all_contracts()
@@ -62,6 +66,7 @@ def get_all_smart_contracts():
 
 
 @smart_contracts.route('/address/<contract_address>', methods=['GET'])
+@token_required
 def get_smart_contract_by_address(contract_address):
     try:
         contract = SmartContract.get_contract_by_address(contract_address)
@@ -86,6 +91,7 @@ def get_smart_contract_by_address(contract_address):
 
 
 @smart_contracts.route('/<contract_id>', methods=['GET'])
+@token_required
 def get_smart_contract_by_id(contract_id):
     try:
         contract = SmartContract.get_contract_by_id(contract_id)
@@ -110,6 +116,7 @@ def get_smart_contract_by_id(contract_id):
 
 
 @smart_contracts.route('/<contract_id>', methods=['PUT'])
+@token_required
 def update_smart_contract(contract_id):
     try:
         data = request.json
@@ -135,6 +142,7 @@ def update_smart_contract(contract_id):
 
 
 @smart_contracts.route('/<contract_id>', methods=['DELETE'])
+@token_required
 def delete_smart_contract(contract_id):
     try:
         deleted = SmartContract.delete_contract(contract_id)

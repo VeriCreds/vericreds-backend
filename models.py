@@ -31,7 +31,7 @@ class User:
                 "last_name": last_name,
                 "email_address": email_address,
                 "metamask_address": metamask_address,
-                "password": User.encrypt_password(password),
+                "password": password,
                 "created_at": created_at,
                 "updated_at": created_at
             }
@@ -59,7 +59,7 @@ class User:
     @staticmethod
     def get_user_by_email(email_address):
         """Get a user by email"""
-        user = mongo.db.users.find_one({"email": email_address})
+        user = mongo.db.users.find_one({"email_address": email_address})
         if not user:
             return
         user["_id"] = str(user["_id"])
@@ -133,7 +133,7 @@ class User:
         """
         Login a user"""
         user = User.get_user_by_email(email_address)
-        if not user or not check_password_hash(user["password"], password):
+        if not user or not (user["password"] == password):
             return
         user.pop("password")
         return user

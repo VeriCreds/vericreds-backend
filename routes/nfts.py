@@ -1,11 +1,14 @@
 from flask import Blueprint, request, jsonify
 from cerberus import Validator
+
+from auth_middleware import token_required
 from models import NFT
 
 nfts = Blueprint('nfts', __name__, template_folder='routes')
 
 
 @nfts.route('/', methods=['POST'])
+@token_required
 def add_nft():
     try:
         nft_data = request.get_json()
@@ -45,6 +48,7 @@ def add_nft():
 
 
 @nfts.route('/', methods=['GET'])
+@token_required
 def get_all_nfts():
     try:
         all_nfts = NFT.get_all_nfts()
@@ -62,6 +66,7 @@ def get_all_nfts():
 
 
 @nfts.route('/<nft_id>', methods=['GET'])
+@token_required
 def get_nft_by_id(nft_id):
     try:
         nft = NFT.get_nft_by_id(nft_id)
@@ -86,6 +91,7 @@ def get_nft_by_id(nft_id):
 
 
 @nfts.route('/<nft_id>', methods=['PUT'])
+@token_required
 def update_nft(nft_id):
     try:
         data = request.json
@@ -111,6 +117,7 @@ def update_nft(nft_id):
 
 
 @nfts.route('/<nft_id>', methods=['DELETE'])
+@token_required
 def delete_nft(nft_id):
     try:
         deleted = NFT.delete_nft(nft_id)

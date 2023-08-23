@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify
 from cerberus import Validator
 from models import Transaction  # Assuming you have a Transaction model like the User model
+from auth_middleware import token_required
 
 transactions = Blueprint('transactions', __name__, template_folder='routes')
 
 
 @transactions.route('/', methods=['POST'])
+@token_required
 def add_transaction():
     try:
         transaction = request.get_json()
@@ -44,6 +46,7 @@ def add_transaction():
 
 
 @transactions.route("/", methods=["GET"])
+@token_required
 def get_all_transactions():
     all_transactions = Transaction.get_all_transactions()
     return jsonify({
@@ -53,6 +56,7 @@ def get_all_transactions():
 
 
 @transactions.route("/<transaction_id>", methods=["GET"])
+@token_required
 def get_single_transaction(transaction_id):
     transaction = Transaction.get_transaction_by_id(
         transaction_id)  # Assuming this function exists in your Transaction model.
@@ -63,6 +67,7 @@ def get_single_transaction(transaction_id):
 
 
 @transactions.route("/status/<status>", methods=["GET"])
+@token_required
 def get_transactions_by_status(status):
     try:
         transactions_by_status = Transaction.get_transaction_by_status(status)
@@ -79,6 +84,7 @@ def get_transactions_by_status(status):
 
 
 @transactions.route("/<transaction_id>", methods=["PUT"])
+@token_required
 def update_transaction(transaction_id):
     try:
         data = request.json
@@ -102,6 +108,7 @@ def update_transaction(transaction_id):
 
 
 @transactions.route("/<transaction_id>", methods=["DELETE"])
+@token_required
 def delete_transaction(transaction_id):
     try:
         Transaction.delete_transaction(transaction_id)
